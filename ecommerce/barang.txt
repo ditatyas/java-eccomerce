@@ -1,0 +1,3 @@
+{"idbarang":"BR001","namabarang":"Pipa","qtybarang":"40","hargasatuan":30000}
+{"idbarang":"BR002","namabarang":"Galon","qtybarang":"50","hargasatuan":5000}
+{"idbarang":"BR003","namabarang":"Monitor","qtybarang":"5","hargasatuan":3000000}

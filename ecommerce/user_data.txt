@@ -1,0 +1,2 @@
+{"username":"admin","fullname":"Admin","password":"admin","type":1}
+{"username":"aldi","fullname":"Aldi","password":"aldi","type":2}
