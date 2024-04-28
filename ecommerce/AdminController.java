@@ -1,3 +1,5 @@
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -8,6 +10,7 @@ import java.io.FileReader;
 public class AdminController {
 
     private static final String BARANG_FILE = "barang.txt";
+    private static final String KERANJANG_FILE = "keranjang.txt";
 
     public void menuAdmin(Scanner scanner) {
         ClearConsoleService clearConsole = new ClearConsoleService();
@@ -18,7 +21,9 @@ public class AdminController {
         System.out.println("2. Edit Barang");
         System.out.println("3. Hapus Barang");
         System.out.println("4. List Barang");
-        System.out.println("5. Back");
+        System.out.println("5. Masukan Barang Kedalam Keranjang");
+        System.out.println("6. Checkout");        
+        System.out.println("7. Back");
 
         System.out.print("Masukkan pilihan Anda: ");
         int menuAdmin = scanner.nextInt();
@@ -26,7 +31,7 @@ public class AdminController {
 
         clearConsole.clearConsole();
 
-        if (menuAdmin == 5) { // Back
+        if (menuAdmin == 7) { // Back
         }
         else {
             if (menuAdmin == 1) { // Tambah Barang Baru
@@ -216,10 +221,83 @@ public class AdminController {
 
                 adminCon.menuAdmin(scanner);
             }
+            else if (menuAdmin == 5) { // Masukan Barang Kedalam Keranjang
+                adminCon.addItemsToCart(scanner);
+            }
+            else if (menuAdmin == 6) { // Checkout
+                adminCon.checkout(scanner);
+            }
             else {
                 System.out.println("Menu Not Available!\n");
             }
         }
+    }
+
+    private void addItemsToCart(Scanner scanner) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(KERANJANG_FILE, true))) {
+            System.out.println("Masukkan ID Barang yang ingin ditambahkan ke keranjang: ");
+            String idBarang = scanner.nextLine();
+            System.out.println("Masukkan Jumlah: ");
+            int qty = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+            
+            int hargaSatuan = getHargaSatuanById(idBarang); // Get the price of the item
+            int totalPrice = hargaSatuan * qty; // Calculate total price for the item
+            
+            writer.println(idBarang + "," + qty + "," + totalPrice); // Write item details to cart
+            System.out.println("Barang berhasil ditambahkan ke keranjang!\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void checkout(Scanner scanner) {
+        try (Scanner cartReader = new Scanner(new FileReader(KERANJANG_FILE))) {
+            double totalPrice = 0;
+            System.out.println("===== ISI KERANJANG =====");
+            while (cartReader.hasNextLine()) {
+                String line = cartReader.nextLine();
+                String[] parts = line.split(",");
+                String idBarang = parts[0];
+                int qty = Integer.parseInt(parts[1]);
+                int hargaSatuan = getHargaSatuanById(idBarang);
+                System.out.println("ID Barang: " + idBarang);
+                System.out.println("Jumlah: " + qty);
+                System.out.println("Harga Satuan: " + hargaSatuan);
+                System.out.println("Subtotal: " + (hargaSatuan * qty));
+                System.out.println("---------------------------");
+                totalPrice += hargaSatuan * qty;
+            }
+            System.out.println("Total Harga: " + totalPrice);
+        } catch (FileNotFoundException e) {
+            System.out.println("Keranjang kosong!");
+        }
+    }
+
+    private double calculateTotalPrice() {
+        double totalPrice = 0;
+        try (Scanner cartReader = new Scanner(new FileReader(KERANJANG_FILE))) {
+            while (cartReader.hasNextLine()) {
+                String line = cartReader.nextLine();
+                String[] parts = line.split(",");
+                String idBarang = parts[0];
+                int qty = Integer.parseInt(parts[1]);
+                int hargaSatuan = getHargaSatuanById(idBarang);
+                totalPrice += hargaSatuan * qty;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return totalPrice;
+    }    
+
+    private int getHargaSatuanById(String idBarang) {
+        Map<String, Integer> hargaSatuanMap = new HashMap<>();
+        hargaSatuanMap.put("123", 100); // Example: ID "123" has harga satuan 100
+        hargaSatuanMap.put("456", 200); // Example: ID "456" has harga satuan 200
+        // Add more items as needed
+        return hargaSatuanMap.getOrDefault(idBarang, 0); // Default to 0 if ID not found
     }
 
     private String[] jsonDecodeBarang(String jsonString) {
